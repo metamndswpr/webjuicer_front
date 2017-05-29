@@ -2,11 +2,15 @@
 //// 부모를 나쁘다 그러면 일단 자동적으로 자식들도 나쁜거. 그러나 그 중 착한 자식 선택 가능. 
 //// modify toggleHoverEffect
 
-window.onload = function () { init(); };
-document.onclick = function () { updateNodeState(); };
+window.onload = function () {
+    init();
+};
+document.onclick = function () {
+    updateNodeState();
+};
 
 var targetOpacity = 0.44444;
-var targetAlpha = 0.44444;
+var targetAlpha = 0.2;
 var juiceButtonPressed = false;
 
 var init = function () {
@@ -126,7 +130,14 @@ var propagateJuicyState = function (_currentNode, _juicyState) {
         temp.pop();
         temp = [].concat(temp);
         _currentNode.className = temp.join(' ');
-        if (_currentNode.style.opacity == targetOpacity) {
+
+        var colorCoord = parseColorString(getComputedStyle(_currentNode).color);
+        var colorCoordBg = parseColorString(getComputedStyle(_currentNode).backgroundColor);
+        if(colorCoord.length == 4 && colorCoord[3] == targetAlpha){
+            _currentNode.style.color = makeRgbaString(colorCoord, 1.0);
+            _currentNode.style.backgroundColor = makeRgbaString(colorCoordBg, 1.0);
+        }
+        if (_currentNode.tagName == 'IMG' && _currentNode.style.opacity == targetOpacity) {
             _currentNode.style.opacity = 1.0;
         }
     } else {
@@ -134,7 +145,19 @@ var propagateJuicyState = function (_currentNode, _juicyState) {
         _currentNode.className += ' juicy-false';
         var parentElementNode = findParentElementNode(_currentNode);
         if (parentElementNode.style.opacity != targetOpacity) {
-            _currentNode.style.opacity = targetOpacity;
+            if (_currentNode.tagName == 'IMG') {
+                _currentNode.style.opacity = targetOpacity;
+            } else {
+                var colorString = getComputedStyle(_currentNode).color;
+                var colorCoord = parseColorString(colorString);
+                var rgba_c = makeRgbaString(colorCoord, targetAlpha);
+                _currentNode.style.color = rgba_c;
+
+                var backgroundColorString = getComputedStyle(_currentNode).backgroundColor;
+                var backgroundColorCoord = parseColorString(backgroundColorString);
+                var rgba_bc = makeRgbaString(backgroundColorCoord, targetAlpha);
+                _currentNode.style.backgroundColor = rgba_bc;
+            }
         }
     }
 
@@ -150,6 +173,20 @@ var propagateJuicyState = function (_currentNode, _juicyState) {
 
 /////////////////////////////// Utils //////////////////////////////////
 
+var parseColorString = function(_colorString){
+    var colorCoord = _colorString.split(/[\s,()]+/);
+    colorCoord = colorCoord.filter(Boolean);
+    colorCoord = colorCoord.splice(1);
+    return colorCoord;
+}
+
+var makeRgbaString = function(_colorCoord, _alpha){
+    var alphaString = _alpha +"";
+    var rgbaString = 'rgba(' + _colorCoord[0] + ', ' + _colorCoord[1] + ', ' + _colorCoord[2] + ', ' + alphaString +')';
+    return rgbaString;
+}
+
+
 var findParentElementNode = function (_node) {
     var parentElementNode;
     var tempParent = _node.parentNode;
@@ -164,10 +201,10 @@ var findParentElementNode = function (_node) {
     return parentElementNode;
 }
 
-var findAllParentsElementNodes = function(_node){
+var findAllParentsElementNodes = function (_node) {
     var allParents = [];
     var tempParent = findParentElementNode(_node);
-    while(tempParent){
+    while (tempParent) {
         allParents.concat(tempParent);
         tempParent = findParentElementNode(tempParent);
     }
