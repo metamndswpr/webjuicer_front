@@ -1,6 +1,4 @@
-// 선택되거나 호버되면 이미지는 투명도를 조절하고, 다른 것들은 폰트색 및 배경색의 투명도를 조정 (나쁜 부모 아래 착한 자식 있도록)
-//// 부모를 나쁘다 그러면 일단 자동적으로 자식들도 나쁜거. 그러나 그 중 착한 자식 선택 가능. 
-//// modify toggleHoverEffect
+// div 에서 onclick 액션이 달려있으면
 
 window.onload = function () {
     init();
@@ -83,6 +81,7 @@ var toggleClickables = function () {
         }
     }
     var allHrefs = document.getElementsByTagName('a');
+    // var allVideos = document.getElementsByTagName('video');
 
     if (juiceButtonPressed) {
         for (var i = 0; i < allButtons.length; i++) {
@@ -91,6 +90,9 @@ var toggleClickables = function () {
         for (var i = 0; i < allHrefs.length; i++) {
             allHrefs[i].style.pointerEvents = 'none';
         }
+        // for (var i = 0; i < allVideos.length; i++) {
+        //     allVideos[i].src = '';
+        // }
     } else {
         for (var i = 0; i < allButtons.length; i++) {
             allButtons[i].disabled = false;
@@ -98,6 +100,9 @@ var toggleClickables = function () {
         for (var i = 0; i < allHrefs.length; i++) {
             allHrefs[i].style.pointerEvents = 'auto';
         }
+        // for (var i = 0; i < allVideos.length; i++) {
+        //     allVideos[i].src = '';
+        // }
     }
 }
 
@@ -133,7 +138,7 @@ var propagateJuicyState = function (_currentNode, _juicyState) {
 
         var colorCoord = parseColorString(getComputedStyle(_currentNode).color);
         var colorCoordBg = parseColorString(getComputedStyle(_currentNode).backgroundColor);
-        if(colorCoord.length == 4 && colorCoord[3] == targetAlpha){
+        if (colorCoord.length == 4 && colorCoord[3] == targetAlpha) {
             _currentNode.style.color = makeRgbaString(colorCoord, 1.0);
             _currentNode.style.backgroundColor = makeRgbaString(colorCoordBg, 1.0);
         }
@@ -153,10 +158,19 @@ var propagateJuicyState = function (_currentNode, _juicyState) {
                 var rgba_c = makeRgbaString(colorCoord, targetAlpha);
                 _currentNode.style.color = rgba_c;
 
-                var backgroundColorString = getComputedStyle(_currentNode).backgroundColor;
-                var backgroundColorCoord = parseColorString(backgroundColorString);
-                var rgba_bc = makeRgbaString(backgroundColorCoord, targetAlpha);
+                var colorString_bc = getComputedStyle(_currentNode).backgroundColor;
+                var colorCoord_bc = parseColorString(colorString_bc);
+                var rgba_bc = makeRgbaString(colorCoord_bc, targetAlpha);
+                console.log('before: ' + rgba_bc);
+                if (colorCoord_bc[0] === '0' && colorCoord_bc[1] === '0' && colorCoord_bc[2] === '0') {
+                    // if rgba is (0,0,0,x) then it usually means there was no specified color.
+                    // thus make it white as default.
+                    rgba_bc = 'rgba(255, 255, 255, 0)';
+                }
+                console.log('after: ' + rgba_bc);
                 _currentNode.style.backgroundColor = rgba_bc;
+                // _currentNode.style.backgroundColor = 'white';
+                // console.log('white');
             }
         }
     }
@@ -173,16 +187,16 @@ var propagateJuicyState = function (_currentNode, _juicyState) {
 
 /////////////////////////////// Utils //////////////////////////////////
 
-var parseColorString = function(_colorString){
+var parseColorString = function (_colorString) {
     var colorCoord = _colorString.split(/[\s,()]+/);
     colorCoord = colorCoord.filter(Boolean);
     colorCoord = colorCoord.splice(1);
     return colorCoord;
 }
 
-var makeRgbaString = function(_colorCoord, _alpha){
-    var alphaString = _alpha +"";
-    var rgbaString = 'rgba(' + _colorCoord[0] + ', ' + _colorCoord[1] + ', ' + _colorCoord[2] + ', ' + alphaString +')';
+var makeRgbaString = function (_colorCoord, _alpha) {
+    var alphaString = _alpha + "";
+    var rgbaString = 'rgba(' + _colorCoord[0] + ', ' + _colorCoord[1] + ', ' + _colorCoord[2] + ', ' + alphaString + ')';
     return rgbaString;
 }
 
